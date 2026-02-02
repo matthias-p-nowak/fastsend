@@ -1,0 +1,11 @@
+{
+  "local": 7777,
+  "destination": "test-target",
+  "config": {
+    "parallel": 4
+  },
+  "servers": {
+    "xen": { "ip": "192.168.0.17", "port": 7777 },
+    "local": { "ip": "127.0.0.1", "port": 7777 }
+  }
+}
