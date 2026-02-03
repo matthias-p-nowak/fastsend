@@ -23,6 +23,7 @@
     - completed files
     - statistics regarding speed in bytes per seconds, use kB, MB, GB if values are large enough
     - periodic printouts (once per second) with statistics regarding transfered bytes per second
+    - take measurements of flushed bytes every 250 ms and smoth it over 4 seconds.
 
 # Testing
 - use `test-source` to place arbitrary files and directories in

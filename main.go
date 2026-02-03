@@ -188,22 +188,37 @@ func runClient(cfg *Config, args []string) error {
 	start := time.Now()
 	done := make(chan struct{})
 	go func() {
-		ticker := time.NewTicker(time.Second)
+		const tick = 250 * time.Millisecond
+		const window = 4
+		type sample struct {
+			t     time.Time
+			bytes int64
+		}
+		ticker := time.NewTicker(tick)
 		defer ticker.Stop()
-		var last int64
-		lastTime := time.Now()
+		var samples [window]sample
+		var count int
+		var idx int
 		for {
 			select {
 			case <-ticker.C:
-				total := atomic.LoadInt64(&sentBytes)
-				delta := total - last
-				last = total
 				now := time.Now()
-				elapsed := now.Sub(lastTime)
+				total := atomic.LoadInt64(&sentBytes)
+				samples[idx] = sample{t: now, bytes: total}
+				if count < window {
+					count++
+				}
+				idx = (idx + 1) % window
+				if count < 2 {
+					continue
+				}
+				oldest := samples[idx%count]
+				newest := samples[(idx-1+window)%window]
+				elapsed := newest.t.Sub(oldest.t)
 				if elapsed <= 0 {
 					elapsed = time.Nanosecond
 				}
-				lastTime = now
+				delta := newest.bytes - oldest.bytes
 				fmt.Printf("transfer rate %s\n", formatRateFloat(float64(delta)/elapsed.Seconds()))
 			case <-done:
 				return
